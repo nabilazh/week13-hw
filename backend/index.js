@@ -9,6 +9,7 @@ const prisma = new PrismaClient();
 const app = express();
 
 
+
 function authenticateTokenMiddleware(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -22,7 +23,7 @@ function authenticateTokenMiddleware(req, res, next) {
 
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'http://localhost:3000',
   allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization",
   methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
   optionsSuccessStatus: 200
@@ -48,20 +49,26 @@ const upload = multer({
 
 
 app.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  try {
-    const { password: passwordDB, ...user } = await prisma.user.create({
+  try{
+    const { name, email, password } = req.body;
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+  const { password: passwordDB, ...user } = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
       },
     });
+
     res.json({ user });
   }
   catch (err) {
-    res.status(400).json({ message: "User already exists" });
+    console.error(err);
+    return res.status(400).json({ message: "User already exists" });
   }
 });
 
@@ -81,7 +88,7 @@ app.post("/login", async (req, res) => {
 
   }
   catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(400).json({ message: "Invalid credentials" });
   }
 
@@ -98,7 +105,7 @@ app.post("/books", authenticateTokenMiddleware, upload.single('image'), async (r
         publisher,
         year: parseInt(year),
         pages: parseInt(pages),
-        image: req.file.path // add the path to the uploaded image to the book data
+        image: req.file ? req.file.path : null,
       },
     });
     res.json({ book });

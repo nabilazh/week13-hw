@@ -20,6 +20,8 @@ import {
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../modules/fetch";
+import React from 'react';
+import Login from './Login';
 
 const Navbar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -139,6 +141,14 @@ const Navbar = () => {
       </Modal>
     </Flex>
   );
+
+  return (
+    <div>
+      {/* ... (elemen-elemen lain di dalam navbar) */}
+      <Login /> {/* Tambahkan formulir login di dalam navbar */}
+    </div>
+  );
+  
 };
 
 export default Navbar;
